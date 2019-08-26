@@ -1,12 +1,19 @@
 'use strict'
 
 function checkHook (pkgName, hookName, hookCmd) {
+  // funding
   if (pkgName === 'funding') {
     return false
   }
 
-  if (hookName === 'postinstall') {
+  // opencollective
+  if (hookCmd.startsWith('opencollective-postinstall')) {
+    return false
+  }
 
+  // core-js
+  if (hookCmd.endsWith('echo "ignore"')) {
+    return false
   }
 
   return true
