@@ -1,6 +1,6 @@
 # npm-adblock
 
-A simple module that patches npm to not run some postinstall hooks used to display ads
+The time has come! Banish the ads and declutter the build logs!
 
 # How does it work?
 
@@ -17,3 +17,9 @@ You can re-run it at any time using `adblock-patch`
 When you don't notice it, it's working! :)
 
 Otherwise, feel free to [open an issue](https://github.com/mkg20001/npm-adblock/issues)
+
+# Note
+
+While I don't hate people asking for funds, there should be an easy and clear opt-out method, like on the web, which I did not find
+
+So I made this instead
