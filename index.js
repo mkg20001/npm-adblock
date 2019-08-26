@@ -7,13 +7,19 @@ function checkHook (pkgName, hookName, hookCmd) {
   }
 
   // opencollective
-  if (hookCmd.startsWith('opencollective-postinstall')) {
+  if (hookCmd.startsWith('opencollective-postinstall') || hookCmd.indexOf('opencollective.com') !== -1) {
     return false
   }
 
   // core-js
   if (hookCmd.endsWith('echo "ignore"')) {
     return false
+  }
+
+  if (hookName === 'postinstall') {
+    if (pkgName === 'sweetalert2') {
+      return false
+    }
   }
 
   return true
