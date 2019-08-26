@@ -1,6 +1,6 @@
 {
   "name": "npm-adblock",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "A simple module that patches npm to not run some postinstall hooks used to display ads",
   "main": "index.js",
   "bin": {
