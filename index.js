@@ -1,11 +1,8 @@
 'use strict'
 
-function checkHook (pkgName, hookName, hookCmd) {
-  // funding
-  if (pkgName === 'funding') {
-    return false
-  }
+const blacklist = ['sweetalert2', 'greenlock', 'funding']
 
+function checkHook (pkgName, hookName, hookCmd) {
   // opencollective
   if (hookCmd.startsWith('opencollective-postinstall') || hookCmd.indexOf('opencollective.com') !== -1) {
     return false
@@ -17,7 +14,8 @@ function checkHook (pkgName, hookName, hookCmd) {
   }
 
   if (hookName === 'postinstall') {
-    if (pkgName === 'sweetalert2') {
+    // custom
+    if (blacklist.indexOf(pkgName) !== -1) {
       return false
     }
   }
