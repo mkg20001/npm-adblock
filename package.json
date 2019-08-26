@@ -16,5 +16,13 @@
     "ads"
   ],
   "author": "Maciej Krüger <mkg20001@gmail.com>",
-  "license": "MPL-2.0"
+  "license": "MPL-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mkg20001/npm-adblock-patch.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mkg20001/npm-adblock-patch/issues"
+  },
+  "homepage": "https://github.com/mkg20001/npm-adblock-patch#readme"
 }
