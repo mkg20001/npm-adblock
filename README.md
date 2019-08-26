@@ -1,4 +1,4 @@
-# npm-adblock-patch
+# npm-adblock
 
 A simple module that patches npm to not run some postinstall hooks used to display ads
 
@@ -10,10 +10,10 @@ After being installed globally, this module's postinstall script will patch the 
 
 # Usage
 
-Simply install it globally using `npm i -g npm-adblock-patch`
+Simply install it globally using `npm i -g npm-adblock`
 
 You can re-run it at any time using `adblock-patch`
 
 When you don't notice it, it's working! :)
 
-Otherwise, feel free to [open an issue](https://github.com/mkg20001/npm-adblock-patch/issues)
+Otherwise, feel free to [open an issue](https://github.com/mkg20001/npm-adblock/issues)
