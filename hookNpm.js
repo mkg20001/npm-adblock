@@ -28,10 +28,12 @@ actions.forEach(({name, path}) => {
   try {
     log(path)
 
-    const contents = fs.readFileSync(path)
-    const patchedContents = patchHook(String(contents), name)
+    const contents = String(fs.readFileSync(path))
+    const patchedContents = patchHook(contents, name)
 
-    fs.writeFileSync(path, patchedContents)
+    if (contents !== patchedContents) {
+      fs.writeFileSync(path, patchedContents)
+    }
   } catch (_err) {
     if (_err.code === 'EACCES') {
       err('\n *** Failed patching %s *** \n *** You NEED to run this script as an administrator or otherwise make the file accessible for patching! *** \n', path)
