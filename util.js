@@ -3,11 +3,39 @@
 const log = (...a) => process.env.DEBUG ? console.log(...a) : ''
 const err = (...a) => {
   console.error(...a)
-  process.exit(1)
+  process.exit(0)
+}
+const errB = (msg, ...a) => {
+  err(`\n *** ${msg} *** \n`, ...a)
 }
 
 const fs = require('fs')
 const path = require('path')
+
+/* Patches this:
+
+'use strict'
+var lifecycle = require('../../utils/lifecycle.js')
+var packageId = require('../../utils/package-id.js')
+const fs = require('fs')
+
+module.exports = function (staging, pkg, log, next) {
+  log.silly('postinstall', packageId(pkg))
+  lifecycle(pkg.package, 'postinstall', pkg.path, next)
+}
+*/
+
+const selfPath = fs.realpathSync(require.resolve('.'))
+
+function patchHook (contents, name) {
+  if (contents.indexOf('filterHook') !== -1) return contents // already patched
+
+  return contents
+    .replace("strict'", "strict';" + `const {filterHook} = require(${JSON.stringify(selfPath)})`)
+    .replace(/lifecycle\(.+\)/gmi, (full) => {
+      return `if (filterHook(pkg, ${JSON.stringify(name)})) {${full};} else {next();}`
+    })
+}
 
 function guessNpmLocation () {
   let guesses = []
@@ -38,11 +66,11 @@ function guessNpmLocation () {
   })
 
   if (!validGuess.length) {
-    err('Did not find any valid node paths. Please supply it via the environement variable npm_guess or as a cli argument')
+    errB('Did not find any valid node paths. Please supply it via the environement variable npm_guess or as a cli argument')
   }
 
   if (validGuess.length !== 1) {
-    err('Found multiple valid guesses: %s. Please report!', validGuess.join(', '))
+    errB('Found multiple valid guesses: %s. Please report!', validGuess.join(', '))
   }
 
   return path.dirname(path.dirname(path.dirname(path.dirname(validGuess[0]))))
@@ -51,5 +79,6 @@ function guessNpmLocation () {
 module.exports = {
   log,
   err,
-  guessNpmLocation
+  guessNpmLocation,
+  patchHook
 }

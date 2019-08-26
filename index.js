@@ -21,12 +21,19 @@ function checkHook (pkgName, hookName, hookCmd) {
 
 module.exports = {
   filterHook: (pkg, hookName) => {
+    let pkgName
+
+    if ((pkgName = pkg.package.name) === 'npm') { // we're self-updatig
+      if (hookName === 'postinstall') {
+        require('./hookNpm') // :tada: (we HAVE to hack this in here, seems like they are doing su to switch users)
+      }
+    }
+
     if (!pkg.package.scripts) return true
     let hookCmd
     if (!(hookCmd = pkg.package.scripts[hookName])) return true
 
-    const pkgName = pkg.package.name
     return checkHook(pkgName, hookName, hookCmd)
   },
-  checkHook
+  isAdHook: checkHook
 }
