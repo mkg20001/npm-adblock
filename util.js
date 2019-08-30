@@ -44,12 +44,21 @@ function guessNpmLocation () {
   if (process.env.npm_execpath) {
     guesses.push(path.dirname(path.dirname(path.dirname(process.env.npm_execpath))))
   }
+  guesses.push(path.dirname(path.dirname(path.dirname(process.argv[0]))))
   if (process.env.npm_guess) {
     guesses.push(process.env.npm_guess)
   }
 
   // take it from our installation location
   guesses.push(path.dirname(path.dirname(require.resolve('.'))))
+
+  if (process.platform === 'linux') {
+    guesses.push('/usr/lib/node_modules')
+    guesses.push('/usr/local/lib/node_modules')
+  } else if (process.platform === 'win32') {
+    guesses.push(path.join(process.env.APPDATA, 'npm', 'node_modules'))
+    guesses.push('C:\\Program Files\\nodejs\\node_modules')
+  }
 
   guesses = guesses.concat(module.paths)
 
