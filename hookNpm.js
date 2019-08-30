@@ -90,11 +90,14 @@ ShA.ShellExecute("cmd.exe","/c \\""+WScript.ScriptFullName+"\\"","","runas",5);
 `
 
   fs.writeFileSync(tmpPath, SCRIPT)
-  cp.execSync(tmpPath)
+  const out = cp.execSync(tmpPath)
+  console.log(String(out))
 
-  fs.unlinkSync(tmpPath)
-  console.log(String(fs.readFileSync(tmpOutPath)))
-  fs.unlinkSync(tmpOutPath)
+  setTimeout(() => {
+    fs.unlinkSync(tmpPath)
+    console.log(String(fs.readFileSync(tmpOutPath)))
+    fs.unlinkSync(tmpOutPath)
+  }, 5 * 1000)
 } else {
   console.log('Installed successfully!')
 }
