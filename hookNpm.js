@@ -10,7 +10,8 @@ const {
 } = require('./util')
 
 const path = require('path')
-const fs = require('fs')
+const fs = require('graceful-fs')
+const os = require('os')
 const cp = require('child_process')
 
 const npmLocation = guessNpmLocation()
@@ -26,6 +27,7 @@ const actions = hooks.map(h => [{
 console.log(`NPM @ ${npmLocation}\nActions @ ${actionFolder}`)
 
 let tryAgainWithSudo = false
+let tryAgainWithUAC = false
 
 actions.forEach(({name, path}) => {
   try {
@@ -45,15 +47,44 @@ actions.forEach(({name, path}) => {
         err('\n *** Failed patching %s *** \n *** You NEED to run this script as an administrator or otherwise make the file accessible for patching! *** \n', path)
       }
       return
+    } else if (_err.code === 'EPERM') {
+      if (!process.env.ADBLOCK_SUDO && process.platform === 'linux') {
+        tryAgainWithSudo = true
+      } else if (!process.env.ADBLOCK_UAC && process.platform === 'win32') {
+        tryAgainWithUAC = true
+      } else {
+        err('\n *** Failed patching %s *** \n *** You NEED to run this script as an administrator or otherwise make the file accessible for patching! *** \n', path)
+      }
+      return
     }
 
-    err('\n *** Failed patching %s:\n *** \n%s', path, _err.stack)
+    err('\n *** Failed patching %s *** \n%s', path, _err.stack)
   }
 })
 
 if (tryAgainWithSudo) {
   console.log('Couldn\'t install. Trying again with sudo...')
   cp.spawn('sudo', process.argv, {env: Object.assign({ADBLOCK_SUDO: '1'}, process.env), stdio: 'inherit'})
+} else if (tryAgainWithUAC) {
+  console.log('Couldn\'t install. Trying again with UAC...')
+  const SCRIPT = `@if (1==1) @if(1==0) @ELSE
+@echo off&SETLOCAL ENABLEEXTENSIONS
+>nul 2>&1 "%SYSTEMROOT%\\system32\\cacls.exe" "%SYSTEMROOT%\\system32\\config\\system"||(
+    cscript //E:JScript //nologo "%~f0"
+    @goto :EOF
+)
+echo.Installing npm-adblock...
+${process.argv.map(JSON.stringify).join(' ')}
+REM https://stackoverflow.com/a/5969764/3990041
+@goto :EOF
+@end @ELSE
+ShA=new ActiveXObject("Shell.Application")
+ShA.ShellExecute("cmd.exe","/c \\""+WScript.ScriptFullName+"\\"","","runas",5);
+@end
+`
+  const tmpPath = path.join(os.tmpdir(), String(Math.random()) + '.cmd')
+  fs.writeFileSync(tmpPath, SCRIPT)
+  cp.execSync(tmpPath)
 } else {
   console.log('Installed successfully!')
 }

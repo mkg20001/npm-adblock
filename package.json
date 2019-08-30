@@ -24,5 +24,8 @@
   "bugs": {
     "url": "https://github.com/mkg20001/npm-adblock-patch/issues"
   },
-  "homepage": "https://github.com/mkg20001/npm-adblock-patch#readme"
+  "homepage": "https://github.com/mkg20001/npm-adblock-patch#readme",
+  "dependencies": {
+    "graceful-fs": "^4.2.2"
+  }
 }
