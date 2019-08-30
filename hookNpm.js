@@ -67,6 +67,10 @@ if (tryAgainWithSudo) {
   cp.spawn('sudo', process.argv, {env: Object.assign({ADBLOCK_SUDO: '1'}, process.env), stdio: 'inherit'})
 } else if (tryAgainWithUAC) {
   console.log('Couldn\'t install. Trying again with UAC...')
+
+  const tmpPath = path.join(os.tmpdir(), String(Math.random()) + '.cmd')
+  const tmpOutPath = path.join(os.tmpdir(), String(Math.random()) + '.txt')
+
   const SCRIPT = `@if (1==1) @if(1==0) @ELSE
 @echo off&SETLOCAL ENABLEEXTENSIONS
 >nul 2>&1 "%SYSTEMROOT%\\system32\\cacls.exe" "%SYSTEMROOT%\\system32\\config\\system"||(
@@ -74,7 +78,8 @@ if (tryAgainWithSudo) {
     @goto :EOF
 )
 echo.Installing npm-adblock...
-${process.argv.map(JSON.stringify).join(' ')}
+set ADBLOCK_UAC "1"
+${process.argv.concat([path.dirname(npmLocation)]).map(JSON.stringify).join(' ')} >${JSON.stringify(outPath)}
 REM https://stackoverflow.com/a/5969764/3990041
 @goto :EOF
 @end @ELSE
@@ -82,9 +87,13 @@ ShA=new ActiveXObject("Shell.Application")
 ShA.ShellExecute("cmd.exe","/c \\""+WScript.ScriptFullName+"\\"","","runas",5);
 @end
 `
-  const tmpPath = path.join(os.tmpdir(), String(Math.random()) + '.cmd')
+
   fs.writeFileSync(tmpPath, SCRIPT)
   cp.execSync(tmpPath)
+
+  fs.unlinkSync(tmpPath)
+  console.log(String(fs.readFileSync(tmpOutPath)))
+  fs.unlinkSync(tmpOutPath)
 } else {
   console.log('Installed successfully!')
 }
