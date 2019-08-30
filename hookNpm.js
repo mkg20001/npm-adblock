@@ -78,8 +78,8 @@ if (tryAgainWithSudo) {
     @goto :EOF
 )
 echo.Installing npm-adblock...
-set ADBLOCK_UAC "1"
-set npm_guess ${JSON.stringify(path.dirname(npmLocation))}
+setx ADBLOCK_UAC "1"
+setx npm_guess ${JSON.stringify(path.dirname(npmLocation))} /M
 ${process.argv.map(JSON.stringify).join(' ')} >${JSON.stringify(tmpOutPath)}
 REM https://stackoverflow.com/a/5969764/3990041
 @goto :EOF
