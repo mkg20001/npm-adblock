@@ -24,7 +24,10 @@ const actions = hooks.map(h => [{
   name: h
 }]).map(a => a[0])
 
-console.log(`NPM @ ${npmLocation}\nActions @ ${actionFolder}`)
+console.log('Installing npm patches for npm-adblock...')
+
+log('npm %o', npmLocation)
+log('actions %o', actionFolder)
 
 let tryAgainWithSudo = false
 let tryAgainWithUAC = false
