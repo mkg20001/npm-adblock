@@ -23,11 +23,23 @@ function checkHook (pkgName, hookName, hookCmd) {
   return true
 }
 
+const fs = require('fs')
+const selfPath = fs.realpathSync(require.resolve('.'))
+function patchHook (contents, name) {
+  if (contents.indexOf('filterHook') !== -1) return contents // already patched
+
+  return contents
+    .replace("strict'", "strict';" + `const {filterHook} = require(${JSON.stringify(selfPath)})`)
+    .replace(/lifecycle\(.+\)/gmi, (full) => {
+      return `if (filterHook(pkg, ${JSON.stringify(name)})) {${full};} else {next();}`
+    })
+}
+
 module.exports = {
   filterHook: (pkg, hookName) => {
     let pkgName
 
-    if ((pkgName = pkg.package.name) === 'npm') { // we're self-updatig
+    if ((pkgName = pkg.package.name) === 'npm' || pkgName === 'npm-adblock') { // we're self-updatig
       if (hookName === 'postinstall') {
         require('./hookNpm') // :tada: (we HAVE to hack this in here, seems like they are doing su to switch users)
       }
@@ -39,5 +51,6 @@ module.exports = {
 
     return checkHook(pkgName, hookName, hookCmd)
   },
+  patchHook,
   isAdHook: checkHook
 }

@@ -11,6 +11,8 @@ const errB = (msg, ...a) => {
   err(`\n *** ${msg} *** \n`, ...a)
 }
 
+const {patchHook} = require('.')
+
 const fs = require('graceful-fs')
 const path = require('path')
 
@@ -30,16 +32,6 @@ module.exports = function (staging, pkg, log, next) {
 const selfPath = fs.realpathSync(require.resolve('.'))
 
 log('hook path is %s', selfPath)
-
-function patchHook (contents, name) {
-  if (contents.indexOf('filterHook') !== -1) return contents // already patched
-
-  return contents
-    .replace("strict'", "strict';" + `const {filterHook} = require(${JSON.stringify(selfPath)})`)
-    .replace(/lifecycle\(.+\)/gmi, (full) => {
-      return `if (filterHook(pkg, ${JSON.stringify(name)})) {${full};} else {next();}`
-    })
-}
 
 function guessNpmLocation () {
   let guesses = []

@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+/* eslint-disable no-console */
+
 'use strict'
 
 const {
@@ -14,6 +16,8 @@ const fs = require('graceful-fs')
 const os = require('os')
 const cp = require('child_process')
 
+/* Preparing */
+
 const npmLocation = guessNpmLocation()
 
 const hooks = ['postinstall', 'preinstall', 'install']
@@ -23,6 +27,7 @@ const actions = hooks.map(h => [{
   path: path.join(actionFolder, h + '.js'),
   name: h
 }]).map(a => a[0])
+const binLocation = path.join(npmLocation, 'bin/npm-cli.js')
 
 console.log('Installing npm patches for npm-adblock...')
 
@@ -31,6 +36,46 @@ log('actions %o', actionFolder)
 
 let tryAgainWithSudo = false
 let tryAgainWithUAC = false
+
+/* Wrapper script */
+
+const wrapperScript = `#!/usr/bin/env node
+;(function () { // wrapper in case we're in module_context mode
+  // windows: running "npm blah" in this folder will invoke WSH, not node.
+  /* global WScript */
+  if (typeof WScript !== 'undefined') {
+    WScript.echo(
+      'npm does not work when run\\n' +
+        'with the Windows Scripting Host\\n\\n' +
+        "'cd' to a different directory,\\n" +
+        "or type 'npm.cmd <args>',\\n" +
+        "or type 'node npm <args>'."
+    )
+    WScript.quit(1)
+    return
+  }
+
+  const m = require('module')
+
+  originalLoader = m._load.bind(m)
+  delete m._load
+  m._load = function (request, parent, isMain) {
+    console.log(request, parent, isMain)
+
+    return originalLoader.apply(this, arguments)
+  }
+
+  require(${JSON.stringify(binLocation)})
+})()
+`
+
+/* Patching */
+
+const BinFile = {
+  win32: path.join(process.env.SYSROOT || 'C:\\Windows', 'System32', 'npm.js'),
+  linux: '/bin/npm',
+  darwin: '/system/private/bin/npm'
+}
 
 actions.forEach(({name, path}) => {
   try {
@@ -41,6 +86,19 @@ actions.forEach(({name, path}) => {
 
     if (contents !== patchedContents) {
       fs.writeFileSync(path, patchedContents)
+    }
+
+    if (process.platform !== 'win32') {
+      const binFile = BinFile[process.platform]
+      log('binpatch %o', binFile)
+
+      const binContents = fs.existsSync(binFile) ? String(fs.readFileSync(binFile)) : ''
+
+      if (binContents !== wrapperScript) {
+        fs.writeFileSync(binFile, wrapperScript)
+        fs.chmodSync(binFile, parseInt('755', 8))
+        fs.chownSync(binFile, 0, 0)
+      }
     }
   } catch (_err) {
     if (_err.code === 'EACCES') {
@@ -64,6 +122,8 @@ actions.forEach(({name, path}) => {
     err('\n *** Failed patching %s *** \n%s', path, _err.stack)
   }
 })
+
+/* Rooting */
 
 const escape = require('shell-escape')
 
