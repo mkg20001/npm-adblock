@@ -1,6 +1,6 @@
 {
   "name": "npm-adblock",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "The time has come! Banish the ads and declutter the build logs!",
   "main": "index.js",
   "bin": {
