@@ -26,6 +26,7 @@
   },
   "homepage": "https://github.com/mkg20001/npm-adblock-patch#readme",
   "dependencies": {
-    "graceful-fs": "^4.2.2"
+    "graceful-fs": "^4.2.2",
+    "shell-escape": "^0.2.0"
   }
 }
