@@ -1,7 +1,11 @@
 'use strict'
 
-const log = (...a) => process.env.DEBUG ? console.log(...a) : ''
+global.DEBUG = []
+const log = (...a) => process.env.DEBUG ? console.log(...a) : global.DEBUG.push(a)
 const err = (...a) => {
+  console.error(' === DEBUG LOG === ')
+  global.DEBUG.forEach((a) => console.error(...a))
+  console.error(' === END DEBUG LOG === ')
   console.error(...a)
   console.error(' === Rerun this script with the "adblock-patch" command ===')
   console.error()
