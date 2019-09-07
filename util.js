@@ -49,6 +49,7 @@ function guessNpmLocation () {
     guesses.push(path.dirname(path.dirname(path.dirname(process.env.npm_execpath))))
   }
   guesses.push(path.dirname(path.dirname(path.dirname(process.argv[0]))))
+  guesses.push(path.dirname(path.dirname(path.dirname(fs.realpathSync(process.argv[0])))))
   if (process.env.npm_guess) {
     guesses.push(process.env.npm_guess)
   }
